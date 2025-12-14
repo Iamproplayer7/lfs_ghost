@@ -1,14 +1,14 @@
 import { App } from "../../../app/index.js";
 import { getCameraData } from "../../../app/memory.js";
-import { Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_TINY, Packet, PacketType, Player, Server, StateFlags, TinyType, Vector3, Vehicle } from "../../main/index.js";
+import { ButtonType } from "../../main/classes/Button.js";
+import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_SPX, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector3, Vehicle } from "../../main/index.js";
 import { getModBinData } from "./mods.js";
-
-export const SERVER_INTERVAL = 1;
+import { Utils } from "./utils.js";
 
 const server = Server.create({
     Admin: 'testas',                      
-    Flags: InSimFlags.ISF_LOCAL + InSimFlags.ISF_MCI + InSimFlags.ISF_CON + InSimFlags.ISF_AXM_EDIT + InSimFlags.ISF_AXM_LOAD,
-    Interval: SERVER_INTERVAL, 
+    Flags: InSimFlags.ISF_LOCAL + InSimFlags.ISF_MCI + InSimFlags.ISF_CON,
+    Interval: 1, 
     InSimVer: 10, 
     IName: 'VISM VIEW',
     Prefix: 33,
@@ -72,7 +72,7 @@ Packet.on(PacketType.ISP_LAP, (data: IS_LAP) => {
     if(!LocalVehicle.vehicle) return;
     if(LocalVehicle.vehicle.getPLID() !== data.PLID) return;
 
-    if(bestLap.time === 0 || data.LTime < bestLap.time) {
+    if((bestLap.time === 0 || data.LTime < bestLap.time) && currentLap.status) {
         bestLap.time = data.LTime;
         bestLap.recordPath = currentLap.recordPath;
     }
@@ -81,7 +81,6 @@ Packet.on(PacketType.ISP_LAP, (data: IS_LAP) => {
     currentLap.timeStart = Date.now();
     currentLap.recordPath = [];
 });
-
 
 Event.on(EventType.VEHICLE_CREATED, (vehicle: Vehicle, player: Player) => {
     if(!player.isLocal()) return;
@@ -92,10 +91,11 @@ Event.on(EventType.VEHICLE_CREATED, (vehicle: Vehicle, player: Player) => {
 
 Event.on(EventType.VEHICLE_UPDATE, (vehicle: Vehicle) => {
     if(!currentLap.status) return;
+
     currentLap.recordPath.push({ time: Date.now()-currentLap.timeStart, pos: vehicle.getPosition(), heading: vehicle.getHeading() })
 });
 
-setInterval(() => {
+Interval.set('server-ghost', () => {
     if(!LocalVehicle.vehicle) return;
     if(!currentLap.status) return;
     if(bestLap.time < 1) return;
@@ -159,3 +159,14 @@ setInterval(() => {
         }
     }
 }, 10);
+
+
+Interval.set('server-buttons', () => {
+    const player = PlayerGetter.all.find((p) => p.isLocal);
+    if(!player) return;
+    
+    Button.create(ButtonType.SIMPLE, player, 'BEST LAP TYPE', 'GHOST', 10, 5, 20, 89, bestLap.time > 0 ? '^7' + Utils.toLFSTime(bestLap.time) : '^1-', 32);
+    Button.create(ButtonType.SIMPLE, player, 'BEST LAP TYPE TITLE', 'GHOST', 10, 3, 25, 89, '^3Best lap', 32);
+
+    Button.create(ButtonType.SIMPLE, player, 'RECORDING', 'GHOST', 10, 4, 20, 100, currentLap.status ? '^2Recording' : '^1Waiting...', 32);
+}, 100);
