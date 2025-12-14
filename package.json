@@ -1,0 +1,19 @@
+{
+  "type": "module",
+  "name": "lfsoverlay",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && node ./scripts/copyFiles.js && electron dist/src/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "electron": "^36.2.0",
+    "electron-overlay-window": "^3.3.0",
+    "glob": "^11.0.2",
+    "tsinsim": "^1.2.8"
+  }
+}
