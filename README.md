@@ -3,8 +3,6 @@
 Real-time ghost car for Live for Speed (LFS).
 Race against your best lap from the current session and improve your driving consistency.
 
----
-
 ## 🚗 How It Works
 
 * When you start a qualifying lap, the script begins recording your vehicle.
@@ -12,16 +10,12 @@ Race against your best lap from the current session and improve your driving con
 * After completing a valid lap, a ghost car appears.
 * The ghost drives next to you, replaying your best driven lap.
 
-Image preview:
-[https://github.com/user-attachments/assets/d4e16386-fe27-4469-ab7e-6acc49d814d8](https://github.com/user-attachments/assets/d4e16386-fe27-4469-ab7e-6acc49d814d8)
+<img width="1089" height="645" alt="ghostcar" src="https://github.com/user-attachments/assets/d62b96e1-05de-4f7c-9eb9-ab35a5154d90" />
 
----
 
 ## ⚙️ Installation
 
-1. Install dependencies from the project root:
-
-npm install
+1. Install dependencies from the project root: `npm install`
 
 2. Fix memoryjs installation (if needed):
 
@@ -33,30 +27,19 @@ If you see an error saying that memoryjs cannot be installed:
 memoryjs is an old and unsupported dependency.
 This is a workaround using a pre-built version.
 
----
-
 ## 🛠 Configuration
 
 Configure InSim settings in the following file:
+`project/src/vism/plugins/core/index.ts`
 
-project/src/vism/plugins/core/index.ts
-
----
 
 ## ▶️ Running the Script
 
 1. Start Live for Speed
 2. Go to Single Player
 3. Join a track
-4. In LFS chat, type:
-
-/insim 29999
-
-5. Run the script:
-
-npm run dev
-
----
+4. In LFS chat, type: `/insim 29999`
+5. Run the script: `npm run dev`
 
 ## ✅ Expected Result
 
@@ -68,9 +51,6 @@ If everything works correctly:
 Important:
 
 * LFS must be in windowed mode
-* Fullscreen mode does not work
-
----
 
 ## 🐞 Known Issues
 
@@ -87,21 +67,13 @@ If something does not work, try this order:
 3. Run script
 4. Drive at least 2 laps to get lap times
 
----
-
 ## 🚀 Planned Improvements
 
 * Save best laps between sessions
 * Show lap time timestamps
 * Store best laps for different vehicles
 
----
-
 ## 💬 Issues & Feedback
 
 Please report any issues or bugs.
 Suggestions and pull requests are welcome.
-
----
-
-If you want it **more minimal**, **more flashy**, or **more technical**, just tell me 👍
