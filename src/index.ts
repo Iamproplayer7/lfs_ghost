@@ -14,10 +14,14 @@ const __dirname = dirname(__filename);
 app.on('ready', () => {
     App.start();
 
-    const tray = new Tray(path.join(path.join(__dirname, '../../build/iconp.ico')))
+    const tray = new Tray(path.join(path.join(__dirname, '/iconp.ico')))
     tray.setToolTip('LFSGhost');
     tray.setContextMenu(Menu.buildFromTemplate([
-        { role: 'quit' }
+        {
+            label: 'Exit',
+            type: 'normal',
+            click: () => app.quit()
+        }
     ]))
 });
 
