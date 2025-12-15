@@ -1,4 +1,4 @@
-# 👻 lfs_ghost
+# 👻 LFS Ghost
 
 Real-time ghost car for Live for Speed (LFS).
 Race against your best lap from the current session and improve your driving consistency.
@@ -6,8 +6,8 @@ Race against your best lap from the current session and improve your driving con
 ## 🚗 How It Works
 
 * When you start a qualifying lap, the script begins recording your vehicle.
-* Only the best lap in the current session is recorded.
-* After completing a valid lap, a ghost car appears.
+* Only the best lap in the current session is shown as ghost.
+* After completing a valid qualified lap, a ghost car appears.
 * The ghost drives next to you, replaying your best driven lap.
 
 <img width="1089" height="645" alt="ghostcar" src="https://github.com/user-attachments/assets/d62b96e1-05de-4f7c-9eb9-ab35a5154d90" />
@@ -16,16 +16,6 @@ Race against your best lap from the current session and improve your driving con
 ## ⚙️ Installation
 
 1. Install dependencies from the project root: `npm install`
-
-2. Fix memoryjs installation (if needed):
-
-If you see an error saying that memoryjs cannot be installed:
-
-* Extract the memoryjs.zip archive
-* Copy it into: project/node_modules
-
-memoryjs is an old and unsupported dependency.
-This is a workaround using a pre-built version.
 
 ## 🛠 Configuration
 
