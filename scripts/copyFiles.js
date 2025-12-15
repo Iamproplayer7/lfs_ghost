@@ -1,6 +1,10 @@
 import fs from 'fs';
 import * as glob from 'glob';
 
+// copy node_modules/memoryjs
+fs.cpSync('./memoryjs', './dist/src/memoryjs', {recursive: true});
+console.log(`Folder: memoryjs copied.`);
+
 const files = glob.sync(`./src/**/*.!(ts)`);
 for(const file of files) {
     const filePath = file.replaceAll('\\', '/');
