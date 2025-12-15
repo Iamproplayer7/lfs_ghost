@@ -1,5 +1,5 @@
 // @ts-ignore
-import memoryjs from 'memoryjs';
+import memoryjs from '../memoryjs/index.js';
 
 const process = memoryjs.openProcess('LFS.exe');
 
@@ -15,7 +15,7 @@ export const getCameraData = () => {
         memoryjs.readMemory(process.handle, 0x006A5030, memoryjs.FLOAT),
     ];
 
-    const pos_buffer = memoryjs.readBuffer(process.handle, 0x00D47E00, 3*4);
+    const pos_buffer = memoryjs.readBuffer(process.handle, 0x00D47D80, 3*4);
     const pos = { x: pos_buffer.readFloatLE(0), y: pos_buffer.readFloatLE(4), z: pos_buffer.readFloatLE(8) };
     
     const mstart = 0x0086B890;
