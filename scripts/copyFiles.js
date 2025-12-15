@@ -1,6 +1,10 @@
 import fs from 'fs';
 import * as glob from 'glob';
 
+// copy icon for application tray
+fs.copyFileSync('./build/iconp.ico', './dist/src/iconp.ico');
+console.log(`File: iconp.ico copied.`);
+
 // copy node_modules/memoryjs
 fs.cpSync('./memoryjs', './dist/src/memoryjs', {recursive: true});
 console.log(`Folder: memoryjs copied.`);
