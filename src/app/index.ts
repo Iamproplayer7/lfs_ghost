@@ -24,7 +24,7 @@ export const App: TApp = {
 
         this.window = new BrowserWindow({
             frame: false,
-            show: true,
+            show: false,
             transparent: true,
             fullscreen: true,
             resizable: false,
@@ -40,6 +40,6 @@ export const App: TApp = {
         //this.window.webContents.openDevTools({ mode: 'detach' });
 
         OverlayController.attachByTitle(this.window, 'Live for Speed');
-        OverlayController.focusTarget()
+        //OverlayController.focusTarget()
     }
 }
