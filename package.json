@@ -2,18 +2,50 @@
   "type": "module",
   "name": "lfsoverlay",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/index.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "npm run build && node ./scripts/copyFiles.js && electron dist/src/index.js"
+    "buildTS": "tsc",
+    "dev": "npm run buildTS && node ./scripts/copyFiles.js && electron dist/src/index.js",
+    "build": "npm run buildTS && node ./scripts/copyFiles.js && electron-builder"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "electron": "^36.2.0",
     "electron-overlay-window": "^3.3.0",
     "glob": "^11.0.2",
     "tsinsim": "^1.2.8"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "productName": "LFSGhost",
+    "appId": "lfsghost",
+    "files": [
+      "build/*",
+      "**/*",
+      "!scripts/*",
+      "!app/*",
+      "!src/*",
+      "!tsconfig.json",
+      "!README.md",
+      "!memoryjs.zip",
+      "!dist/win-unpacked/*",
+      "!memoryjs/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "build/iconp.ico"
+    },
+    "portable": {
+      "artifactName": "LFSGhost.exe"
+    },
+    "directories": {
+      "output": "builded"
+    }
   }
 }
