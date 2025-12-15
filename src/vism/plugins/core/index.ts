@@ -6,7 +6,7 @@ import { getModBinData } from "./mods.js";
 import { Utils } from "./utils.js";
 
 const server = Server.create({
-    Admin: 'testas',                      
+    Admin: '',                      
     Flags: InSimFlags.ISF_LOCAL + InSimFlags.ISF_MCI + InSimFlags.ISF_CON,
     Interval: 1, 
     InSimVer: 10, 
