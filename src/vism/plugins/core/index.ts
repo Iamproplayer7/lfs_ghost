@@ -1,7 +1,7 @@
 import { App } from "../../../app/index.js";
 import { getCameraData } from "../../../app/memory.js";
 import { ButtonType } from "../../main/classes/Button.js";
-import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_SPX, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector3, Vehicle } from "../../main/index.js";
+import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector3, Vehicle } from "../../main/index.js";
 import { getModBinData } from "./mods.js";
 import { Utils } from "./utils.js";
 
