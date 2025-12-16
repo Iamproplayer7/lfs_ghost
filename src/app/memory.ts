@@ -1,11 +1,31 @@
 // @ts-ignore
 import memoryjs from '../memoryjs/index.js';
+import { AppA } from './index_app.js';
 
-const process = memoryjs.openProcess('LFS.exe');
+let process: any = false;
+
+const getProcess = () => {
+    if(process) return process;
+
+    try {
+        process = memoryjs.openProcess('LFS.exe');
+        return process;
+    }
+    catch(e) {
+        return false;
+    }
+}
+
 
 export const getCameraData = () => {
-    if(!process || !process.handle) return { fov: [0, 0, 0], pos: { x: 0, y: 0, z: 0 }, matrix: new Array(9).fill(0), view_plid: 0, d: 0 }
+    const process = getProcess();
+    if(!process || !process.handle) {
+        AppA.updateLFSStatus(false);
+        return { fov: [0, 0, 0], pos: { x: 0, y: 0, z: 0 }, matrix: new Array(9).fill(0), view_plid: 0 }
+    }
    
+    AppA.updateLFSStatus(true);
+
     // viewing vehicle PLID
     const view_plid = memoryjs.readMemory(process.handle, 0x0082C24F, memoryjs.UBYTE);
 
@@ -15,7 +35,7 @@ export const getCameraData = () => {
         memoryjs.readMemory(process.handle, 0x006A5030, memoryjs.FLOAT),
     ];
 
-    const pos_buffer = memoryjs.readBuffer(process.handle, 0x00D47D80, 3*4);
+    const pos_buffer = memoryjs.readBuffer(process.handle, 0x00D47E00, 3*4);
     const pos = { x: pos_buffer.readFloatLE(0), y: pos_buffer.readFloatLE(4), z: pos_buffer.readFloatLE(8) };
     
     const mstart = 0x0086B890;
