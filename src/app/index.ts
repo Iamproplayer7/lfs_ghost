@@ -36,10 +36,11 @@ export const App: TApp = {
         });
 
         this.window.loadFile(path.join(__dirname,  '/../view/index.html'));
+        this.window.on('closed', () => { this.window = false; });
+
         // dev tools
         //this.window.webContents.openDevTools({ mode: 'detach' });
 
         OverlayController.attachByTitle(this.window, 'Live for Speed');
-        //OverlayController.focusTarget()
     }
 }
