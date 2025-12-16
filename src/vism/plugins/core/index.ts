@@ -1,4 +1,5 @@
 import { App } from "../../../app/index.js";
+import { AppA, Config } from "../../../app/index_app.js";
 import { getCameraData } from "../../../app/memory.js";
 import { ButtonType } from "../../main/classes/Button.js";
 import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector3, Vehicle } from "../../main/index.js";
@@ -6,7 +7,7 @@ import { getModBinData } from "./mods.js";
 import { Utils } from "./utils.js";
 
 const server = Server.create({
-    Admin: '',                      
+    Admin: Config.InSim.password,                      
     Flags: InSimFlags.ISF_LOCAL + InSimFlags.ISF_MCI + InSimFlags.ISF_CON,
     Interval: 1, 
     InSimVer: 10, 
@@ -14,7 +15,7 @@ const server = Server.create({
     Prefix: 33,
     //UDPPort: 5555             
 });
-server.connect('127.0.0.1', 29999);
+server.connect('127.0.0.1', Config.InSim.port);
 
 /* UDP MCI PACKETS HANDLING */
 /*
@@ -28,9 +29,15 @@ stream.on('message', (data) => {
 /* CAM MODE REQUEST INSIM */
 // to slow down requests, because it don't need to be fast response
 Event.on(EventType.SERVER_CONNECTED, (server: Server) => {
+    AppA.updateInSimStatus(true);
+
     Interval.set('server-cpp', () => {
         Packet.send(server, new IS_TINY({ SubT: TinyType.TINY_SCP, ReqI: 2 }))
     }, 100);
+});
+
+Event.on(EventType.SERVER_DISCONNECTED, (server: Server) => {
+    AppA.updateInSimStatus(false);
 });
 
 let camMode = 0;
