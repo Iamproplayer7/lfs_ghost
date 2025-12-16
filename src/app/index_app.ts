@@ -51,7 +51,7 @@ export const AppA: TApp = {
         this.window.on('closed', () => { this.window = false; });
 
         // dev tools
-        this.window.webContents.openDevTools({ mode: 'detach' });
+        //this.window.webContents.openDevTools({ mode: 'detach' });
 
         // WINDOW
         IPC.on('pageLoaded', () => { 
