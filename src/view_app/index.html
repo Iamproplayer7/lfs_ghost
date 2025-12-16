@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="title">
+        <div class="left">
+            LFSGhost <span id="version" style="margin-left: 5px">0.0.0</span>
+        </div>
+        <div class="right">
+            <div class="minimize">_</div>
+            <div class="exit">X</div>
+        </div>
+    </div>
+    
+    <div class="error">
+        <div class="error_text">err.</div>
+    </div>
+
+    <div class="content">
+        <div style="font-size: 15px; margin-bottom: 10px; -webkit-app-region: none;"><a href="javascript:IPC.emit('open_config');" style="color: #275DFA; cursor: pointer;">Open Config Location</a></div>
+
+        <div style="color: #d2d548;font-size: 12px;margin-bottom: 25px;"><b>INFO</b>: Any changes to Config requires application restart.</div>
+
+        <div style="color: white;">LFS status: <span id="lfs_status" style="color: red;">offline</span></div>
+        <div style="color: white;">InSim status: <span id="insim_status" style="color: red;">offline</span></div>
+    </div>
+
+    <div class="footer">
+        <a href="javascript:IPC.emit('open_github');" style="cursor: pointer;">GitHub</a>
+    </div>
+</body>
+</html>
+
+<script> window.module = module; module = undefined; </script>
+<script src="./jquery.js"></script>
+
+<script type="text/javascript">
+    const IPC = require('./ipc').IPC;
+
+    // LOADED
+    const body = document.querySelector("body");
+    const content = document.querySelector(".content");
+
+    // fix body width/height
+    setInterval(() => {
+        if(body.style.width !== window.innerWidth + 'px' || body.style.height !== window.innerHeight + 'px') {
+            body.style.width = window.innerWidth + 'px';
+            body.style.height = window.innerHeight + 'px';
+        }
+    }, 10);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        IPC.emit('pageLoaded');
+    });
+
+    // WINDOW
+    $('.minimize').on('click', () => {
+        IPC.emit('minimize');
+    });
+
+    $('.exit').on('click', () => {
+       IPC.emit('exit');
+    });
+
+    IPC.on('update_version', (data) => {
+        $('#version').html(data.version);
+    })
+
+    IPC.on('update_status', (data) => {
+        $('#lfs_status').html(data.lfs ? 'online' : 'offline');
+        $('#lfs_status').css('color', data.lfs ? 'green' : 'red');
+
+        $('#insim_status').html(data.insim ? 'online' : 'offline');
+        $('#insim_status').css('color', data.insim ? 'green' : 'red');
+    })
+</script>
