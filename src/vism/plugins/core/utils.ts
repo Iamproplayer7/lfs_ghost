@@ -7,7 +7,7 @@ export const Utils = {
         let milliseconds = ms % 1000;
         let secondsText = (seconds % 60) < 10 ? '0' + (seconds % 60).toString() : (seconds % 60);
         let minutesText = (minutes % 60) < 10 ? '0' + (minutes % 60).toString() : (minutes % 60);
-        let millisecondsText = milliseconds < 10 ? '0' + milliseconds.toString() : milliseconds;
+        let millisecondsText = milliseconds < 100 ? '00' + milliseconds.toString() : (milliseconds < 10 ? '0' + milliseconds.toString() : milliseconds);
 
         return (ms > 0 ? minutesText + ':' + secondsText + '.' + millisecondsText : '00:00.000');
     }

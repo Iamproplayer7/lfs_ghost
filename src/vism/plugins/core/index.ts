@@ -96,6 +96,13 @@ Event.on(EventType.VEHICLE_CREATED, (vehicle: Vehicle, player: Player) => {
     LocalVehicle.bin = getModBinData(vehicle.getName());
 });
 
+Event.on(EventType.VEHICLE_DESTROYED, (vehicle: Vehicle, player: Player) => {
+    if(!player.isLocal()) return;
+
+    LocalVehicle.vehicle = false;
+    LocalVehicle.bin = false;
+});
+
 Event.on(EventType.VEHICLE_UPDATE, (vehicle: Vehicle) => {
     if(!currentLap.status) return;
 
@@ -125,8 +132,9 @@ Interval.set('server-ghost', () => {
         const wheels_draw = [];
         
         if(LocalVehicle.bin) {   
-            const cosH = Math.cos(closestPoint.heading * (Math.PI/180));
-            const sinH = Math.sin(closestPoint.heading * (Math.PI/180));
+            const heading = closestPoint.heading * (Math.PI/180);
+            const cosH = Math.cos(heading);
+            const sinH = Math.sin(heading);
 
             for(const wheel of LocalVehicle.bin.wheels) {
                 const final = new Vector3(
@@ -169,7 +177,7 @@ Interval.set('server-ghost', () => {
 
 
 Interval.set('server-buttons', () => {
-    const player = PlayerGetter.all.find((p) => p.isLocal);
+    const player = PlayerGetter.all.find((p) => p.isLocal());
     if(!player) return;
     
     Button.create(ButtonType.SIMPLE, player, 'BEST LAP TYPE', 'GHOST', 10, 5, 20, 89, bestLap.time > 0 ? '^7' + Utils.toLFSTime(bestLap.time) : '^1-', 32);

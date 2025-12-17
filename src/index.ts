@@ -19,13 +19,11 @@ app.on('ready', () => {
 
     const tray = new Tray(path.join(path.join(__dirname, '/iconp.ico')))
     tray.setToolTip('LFSGhost');
-    tray.setContextMenu(Menu.buildFromTemplate([
-        {
-            label: 'Exit',
-            type: 'normal',
-            click: () => app.quit()
-        }
-    ]))
+    tray.setContextMenu(Menu.buildFromTemplate([{
+        label: 'Exit',
+        type: 'normal',
+        click: () => app.quit()
+    }]))
 });
 
 app.on('quit', () => {

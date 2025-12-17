@@ -62,11 +62,11 @@ export const AppA: TApp = {
         });
 
         IPC.on('exit', () => { 
-            if(this.window) {
-                this.window.destroy();
-                this.window = false;
-                app.quit();
-            }
+            if(!this.window) return;
+
+            this.window.destroy();
+            this.window = false;
+            app.quit();
         });
 
         IPC.on('minimize', () => { 
@@ -105,7 +105,6 @@ class ConfigHandler {
     loaded: boolean = false;
     InSim: { port: number, password: string } = { port: 29999, password: '' };
 
-
     load() {
         // create if data folder does not exist
         if(!fs.existsSync(MAIN_PATH)) {
@@ -121,7 +120,7 @@ class ConfigHandler {
         const data = fs.readFileSync(MAIN_PATH + '/config.json', 'utf-8');
 
         try {
-            var config = JSON.parse(data.toString());
+            const config = JSON.parse(data.toString());
 
             this.InSim = config.InSim;
             this.loaded = true;
@@ -129,7 +128,6 @@ class ConfigHandler {
             this.saveToFile();
         }
         catch(e) {
-            console.log(e)
             return true;
         }
 
