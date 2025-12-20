@@ -1,6 +1,6 @@
 # 👻 LFS Ghost
 
-Supports LFS 0.8B3 & 0.8B4 versions.
+Supports latest LFS 0.8B9 version.
 
 Real-time ghost car for Live for Speed (LFS).
 Race against your best lap from the current session and improve your driving consistency.
