@@ -7,7 +7,7 @@ import path from 'path';
 
 const MAIN_PATH = path.join(app.getPath('userData'), '/data');
 
-type LapData = { id: string, track: string, time: number, path: { time: number, pos: Vector3, heading: number }[] }
+type LapData = { id: string, track: string, time: number, path: { time: number, pos: Vector3, heading: number, speed: number }[] }
 
 
 const lerp = (a: number, b: number, t: number) => {
@@ -29,7 +29,8 @@ export const addIntermediatePoints = (path: LapData['path'], count = 3) => {
             result.push({
                 time: lerp(p1.time, p2.time, t),
                 pos: new Vector3(lerp(p1.pos.x, p2.pos.x, t),lerp(p1.pos.y, p2.pos.y, t),lerp(p1.pos.z, p2.pos.z, t)),
-                heading: lerp(p1.heading, p2.heading, t)
+                heading: lerp(p1.heading, p2.heading, t),
+                speed: lerp(p1.speed, p2.speed, t),
             });
         }
     }

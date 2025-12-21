@@ -9,13 +9,13 @@ import { Utils } from "./utils.js";
 /* GHOST VEHICLE */
 const bestLap = {
     time: 0 as number,
-    path: [] as { time: number, pos: Vector3, heading: number }[] 
+    path: [] as { time: number, pos: Vector3, heading: number, speed: number }[] 
 };
 
 const currentLap = {
     status: false as boolean,
     timeStart: 0 as number,
-    path: [] as { time: number, pos: Vector3, heading: number }[]
+    path: [] as { time: number, pos: Vector3, heading: number, speed: number }[]
 }
 
 const LocalVehicle = {
@@ -70,6 +70,7 @@ Event.on(EventType.VEHICLE_CREATED, (vehicle: Vehicle, player: Player) => {
 
     const lap = Config.loadLap(vehicle.getName(), TRACK);
     if(lap) {
+        currentLap.status = true;
         bestLap.time = lap.time;
         bestLap.path = lap.path;
     }
@@ -97,10 +98,9 @@ Interval.set('path-record', () => {
         if(date-currentLap.timeStart === lastPoint.time && LocalVehicle.vehicle.getPosition().distanceTo(lastPoint.pos) === 0) return;
     }
 
-    currentLap.path.push({ time: date-currentLap.timeStart, pos: LocalVehicle.vehicle.getPosition(), heading: LocalVehicle.vehicle.getHeading() })
+    currentLap.path.push({ time: date-currentLap.timeStart, pos: LocalVehicle.vehicle.getPosition(), heading: LocalVehicle.vehicle.getHeading(), speed: LocalVehicle.vehicle.getSpeed() })
 }, 50);
     
-
 Interval.set('server-ghost', () => {
     if(!LocalVehicle.vehicle) return;
     if(!currentLap.status) return;
@@ -108,7 +108,7 @@ Interval.set('server-ghost', () => {
 
     const ghostTime = performance.now()-currentLap.timeStart;
 
-    let closestPoint: boolean | { time: number, pos: Vector3, heading: number } = false;
+    let closestPoint: boolean | { time: number, pos: Vector3, heading: number, speed: number } = false;
     let closestTimeDiff = 0;
 
     for(const point of bestLap.path) {
@@ -168,13 +168,13 @@ Interval.set('server-ghost', () => {
         }
     }
 
-    const path = [...bestLap.path.slice(idxMin, idxMax).map(p => p.pos)];
-
+    const path = [...bestLap.path.slice(idxMin, idxMax)];
     if(App.window) {
         App.window.webContents.send('DEBUG_DRAW', [
             ...wheels_draw,
             { type: 'point', pos: bestLap.path[idx].pos, color: 0x00ff00, heading: bestLap.path[idx].heading * (Math.PI/180) },
-            { type: 'path', path: path },
+            { type: 'path', path: path.map(p => { return { pos: p.pos, color: Utils.speedToHexColor(p.speed, bestLap.path[idx].speed ) }} ) },
+            //{ type: 'path', path: path.map(p => p.pos) },
         ]);
     }
 }, 10);

@@ -108,8 +108,8 @@ window.IPC.on('DEBUG_DRAW', (items) => {
 
 		if(item.type == 'path') {
 			var lPoint = false;
-			for(const pPos of item.path) {
-				const pos = toXZY(pPos);
+			for(const pItem of item.path) {
+				const pos = toXZY(pItem.pos);
 
 				if(lPoint) {
 					const vertices = [
@@ -119,9 +119,9 @@ window.IPC.on('DEBUG_DRAW', (items) => {
 
 					const pGeometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 					const pMaterial = new THREE.LineBasicMaterial({ 
-						color: 0xffff00, 
+						color: pItem.color, 
 						transparent: true, 
-						opacity: (-1 / 600 * camera.position.distanceTo(pos)) + 0.75,
+						opacity: (-1 / 400 * camera.position.distanceTo(pos)) + 0.75,
 					});
 
 					const pMesh = new THREE.Line(pGeometry, pMaterial);
