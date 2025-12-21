@@ -1,7 +1,7 @@
 import { IS_LAP, IS_STA, PacketType, Vector3 } from "tsinsim";
 import { Button, Event, EventType, Interval, Packet, Player, PlayerGetter, Vehicle } from "../../main/index.js";
 import { getModBinData } from "./mods.js";
-import { Config } from "../../../app/config.js";
+import { addIntermediatePoints, Config } from "../../../app/config.js";
 import { App } from "../../../app/index.js";
 import { ButtonType } from "../../main/classes/Button.js";
 import { Utils } from "./utils.js";
@@ -47,9 +47,9 @@ Packet.on(PacketType.ISP_LAP, (data: IS_LAP) => {
 
     if((bestLap.time === 0 || data.LTime < bestLap.time) && currentLap.status) {
         bestLap.time = data.LTime;
-        bestLap.path = currentLap.path;
+        bestLap.path = addIntermediatePoints(currentLap.path);
 
-        Config.saveLapToFile(LocalVehicle.vehicle.getName(), TRACK, data.LTime, bestLap.path);
+        Config.saveLapToFile(LocalVehicle.vehicle.getName(), TRACK, data.LTime, currentLap.path);
     }
  
     currentLap.status = true;
@@ -98,7 +98,7 @@ Interval.set('path-record', () => {
     }
 
     currentLap.path.push({ time: date-currentLap.timeStart, pos: LocalVehicle.vehicle.getPosition(), heading: LocalVehicle.vehicle.getHeading() })
-}, 1);
+}, 50);
     
 
 Interval.set('server-ghost', () => {
@@ -120,48 +120,62 @@ Interval.set('server-ghost', () => {
         }
     }
 
-    if(closestPoint !== false) {
-        const wheels_draw = [];
-        
-        if(LocalVehicle.bin) {   
-            const heading = closestPoint.heading * (Math.PI/180);
-            const cosH = Math.cos(heading);
-            const sinH = Math.sin(heading);
+    if(closestPoint === false) return;
 
-            for(const wheel of LocalVehicle.bin.wheels) {
-                const final = new Vector3(
-                    closestPoint.pos.x + (wheel.pos.x * cosH + wheel.pos.y * sinH),
-                    closestPoint.pos.y + (wheel.pos.x * sinH - wheel.pos.y * cosH),
-                    closestPoint.pos.z + wheel.pos.z
-                );
+    const wheelsPos = LocalVehicle.bin ? LocalVehicle.bin.wheels : [
+        { pos: new Vector3(    -0.8,   -1.4,   -0.2) },
+        { pos: new Vector3(     0.8,   -1.4,   -0.2) },
+        { pos: new Vector3(     0.8,    1.4,   -0.2) },
+        { pos: new Vector3(    -0.8,    1.4,   -0.2) },
+    ];
+    
+    const wheels_draw = [];
+    
+    const heading = closestPoint.heading * (Math.PI/180);
+    const cosH = Math.cos(heading);
+    const sinH = Math.sin(heading);
 
-                wheels_draw.push({ type: 'point', pos: final, color: 0x0000ff })
-            }
+    for(const wheel of wheelsPos) {
+        const final = new Vector3(
+            closestPoint.pos.x + (wheel.pos.x * cosH + wheel.pos.y * sinH),
+            closestPoint.pos.y + (wheel.pos.x * sinH - wheel.pos.y * cosH),
+            closestPoint.pos.z + wheel.pos.z
+        );
+
+        wheels_draw.push({ type: 'point', pos: final, color: 0x0000ff, heading: heading, wheel: true })
+    }
+
+    const idx = bestLap.path.indexOf(closestPoint);
+    const rangeDistance = 100;
+
+    let idxMin = 0;
+    for(var i = Math.max(0, idx-200); i < idx; i++) {
+        const dist = bestLap.path[i].pos.distanceTo(bestLap.path[idx].pos);
+
+        if(dist < rangeDistance) {
+            idxMin = i;
+            break;
         }
+    }
 
-        const idx = bestLap.path.indexOf(closestPoint);
+    let idxMax = 0;
+    for(var i = Math.min(idx+200, bestLap.path.length-1); i >= idx; i--) {
+        const dist = bestLap.path[i].pos.distanceTo(bestLap.path[idx].pos);
 
-        const range = 400;
-        const path = [...bestLap.path.slice(Math.max(0, idx-range), Math.min(idx+range, bestLap.path.length-1)).map(p => p.pos)];
-
-        
-        // limit points every 10 metres to save fps
-        const newPath = [];
-        let lastPoint: false | Vector3 = false;
-        for(const p of path) {
-            if(lastPoint === false || p.distanceTo(lastPoint) >= 7) {
-                newPath.push(p);
-                lastPoint = p;
-            }
+        if(dist < rangeDistance) {
+            idxMax = i;
+            break;
         }
+    }
 
-        if(App.window) {
-            App.window.webContents.send('DEBUG_DRAW', [
-                ...wheels_draw,
-                { type: 'point', pos: bestLap.path[idx].pos, color: 0x00ff00 },
-                { type: 'path', path: newPath },
-            ]);
-        }
+    const path = [...bestLap.path.slice(idxMin, idxMax).map(p => p.pos)];
+
+    if(App.window) {
+        App.window.webContents.send('DEBUG_DRAW', [
+            ...wheels_draw,
+            { type: 'point', pos: bestLap.path[idx].pos, color: 0x00ff00, heading: bestLap.path[idx].heading * (Math.PI/180) },
+            { type: 'path', path: path },
+        ]);
     }
 }, 10);
 

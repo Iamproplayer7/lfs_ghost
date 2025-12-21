@@ -9,6 +9,36 @@ const MAIN_PATH = path.join(app.getPath('userData'), '/data');
 
 type LapData = { id: string, track: string, time: number, path: { time: number, pos: Vector3, heading: number }[] }
 
+
+const lerp = (a: number, b: number, t: number) => {
+    return a + (b - a) * t;
+}
+
+export const addIntermediatePoints = (path: LapData['path'], count = 3) => {
+    const result: LapData['path'] = [];
+
+    for (let i = 0; i < path.length - 1; i++) {
+        const p1 = path[i];
+        const p2 = path[i + 1];
+
+        result.push(p1);
+
+        for (let j = 1; j <= count; j++) {
+            const t = j / (count + 1);
+
+            result.push({
+                time: lerp(p1.time, p2.time, t),
+                pos: new Vector3(lerp(p1.pos.x, p2.pos.x, t),lerp(p1.pos.y, p2.pos.y, t),lerp(p1.pos.z, p2.pos.z, t)),
+                heading: lerp(p1.heading, p2.heading, t)
+            });
+        }
+    }
+
+    result.push(path[path.length - 1]);
+
+    return result;
+}
+
 class ConfigHandler {
     loaded: boolean = false;
     InSim: { port: number, password: string } = { port: 29999, password: '' };
@@ -69,7 +99,8 @@ class ConfigHandler {
                     const data = fs.readFileSync(`${MAIN_PATH}/laps/${fileName}`, 'utf-8');
                     const dataJSON = JSON.parse(data.toString()) as LapData;
 
-                    dataJSON.path = dataJSON.path.map((p) => { p.pos = new Vector3(p.pos); return p; })
+                    dataJSON.path = addIntermediatePoints(dataJSON.path.map((p) => { p.pos = new Vector3(p.pos); return p; }))
+
                     this.laps.push(dataJSON);
                 }
                 catch(e) { console.log(e) }
