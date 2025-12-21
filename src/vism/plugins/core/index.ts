@@ -2,7 +2,7 @@ import { App } from "../../../app/index.js";
 import { AppA, Config } from "../../../app/index_app.js";
 import { getCameraData } from "../../../app/memory.js";
 import { ButtonType } from "../../main/classes/Button.js";
-import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector3, Vehicle } from "../../main/index.js";
+import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_STA, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector2, Vector3, Vehicle } from "../../main/index.js";
 import { getModBinData } from "./mods.js";
 import { Utils } from "./utils.js";
 
@@ -13,13 +13,13 @@ const server = Server.create({
     InSimVer: 10, 
     IName: 'VISM VIEW',
     Prefix: 33,
-    //UDPPort: 5555             
+    UDPPort: 5555             
 });
 server.connect('127.0.0.1', Config.InSim.port);
 
 /* UDP MCI PACKETS HANDLING */
-/*
-import dgram from 'dgram';
+
+/*import dgram from 'dgram';
 const stream = dgram.createSocket('udp4');
 stream.bind(5555, '127.0.0.1');
 stream.on('message', (data) => {
@@ -75,6 +75,26 @@ const LocalVehicle = {
     bin: false as ReturnType<typeof getModBinData>,
 };
 
+let TRACK = '';
+Packet.on(PacketType.ISP_STA, async (data: IS_STA) => {
+    if(TRACK === data.Track) return;
+
+    TRACK = data.Track;
+    currentLap.status = false;
+    currentLap.timeStart = 0;
+    currentLap.recordPath = [];
+
+    // best lap
+    bestLap.time = 0;
+    bestLap.recordPath = [];
+
+    const lap = Config.laps.find(l => l.id === (LocalVehicle.vehicle ? LocalVehicle.vehicle.getName() : '') && l.track === data.Track);
+    if(lap) {
+        bestLap.time = lap.time;
+        bestLap.recordPath = lap.path;
+    }
+})
+
 Packet.on(PacketType.ISP_LAP, (data: IS_LAP) => {
     if(!LocalVehicle.vehicle) return;
     if(LocalVehicle.vehicle.getPLID() !== data.PLID) return;
@@ -82,10 +102,12 @@ Packet.on(PacketType.ISP_LAP, (data: IS_LAP) => {
     if((bestLap.time === 0 || data.LTime < bestLap.time) && currentLap.status) {
         bestLap.time = data.LTime;
         bestLap.recordPath = currentLap.recordPath;
+
+        Config.saveLapToFile(LocalVehicle.vehicle.getName(), TRACK, data.LTime, bestLap.recordPath);
     }
  
     currentLap.status = true;
-    currentLap.timeStart = Date.now();
+    currentLap.timeStart = performance.now();
     currentLap.recordPath = [];
 });
 
@@ -94,6 +116,18 @@ Event.on(EventType.VEHICLE_CREATED, (vehicle: Vehicle, player: Player) => {
 
     LocalVehicle.vehicle = vehicle;
     LocalVehicle.bin = getModBinData(vehicle.getName());
+
+    currentLap.status = false;
+
+    const lap = Config.loadLap(vehicle.getName(), TRACK);
+    if(lap) {
+        bestLap.time = lap.time;
+        bestLap.recordPath = lap.path;
+    }
+    else {
+        bestLap.time = 0;
+        bestLap.recordPath = [];
+    }
 });
 
 Event.on(EventType.VEHICLE_DESTROYED, (vehicle: Vehicle, player: Player) => {
@@ -101,20 +135,30 @@ Event.on(EventType.VEHICLE_DESTROYED, (vehicle: Vehicle, player: Player) => {
 
     LocalVehicle.vehicle = false;
     LocalVehicle.bin = false;
+
+    currentLap.status = false;
 });
 
-Event.on(EventType.VEHICLE_UPDATE, (vehicle: Vehicle) => {
+Interval.set('path-record', () => {
+    if(!LocalVehicle.vehicle) return;
     if(!currentLap.status) return;
+    
+    const date = performance.now();
+    const lastPoint = currentLap.recordPath[currentLap.recordPath.length-1];
+    if(lastPoint) {
+        if(date-currentLap.timeStart === lastPoint.time && LocalVehicle.vehicle.getPosition().distanceTo(lastPoint.pos) === 0) return;
+    }
 
-    currentLap.recordPath.push({ time: Date.now()-currentLap.timeStart, pos: vehicle.getPosition(), heading: vehicle.getHeading() })
-});
+    currentLap.recordPath.push({ time: date-currentLap.timeStart, pos: LocalVehicle.vehicle.getPosition(), heading: LocalVehicle.vehicle.getHeading() })
+}, 1);
+    
 
 Interval.set('server-ghost', () => {
     if(!LocalVehicle.vehicle) return;
     if(!currentLap.status) return;
     if(bestLap.time < 1) return;
 
-    const ghostTime = Date.now()-currentLap.timeStart;
+    const ghostTime = performance.now()-currentLap.timeStart;
 
     let closestPoint: boolean | { time: number, pos: Vector3, heading: number } = false;
     let closestTimeDiff = 0;
@@ -149,17 +193,15 @@ Interval.set('server-ghost', () => {
 
         const idx = bestLap.recordPath.indexOf(closestPoint);
 
-        const range = 800;
-        const path = [];
-        if(idx > range && idx+range < bestLap.recordPath.length) {
-            path.push(...bestLap.recordPath.slice(idx-range, idx+range).map(p => p.pos));
-        }
+        const range = 400;
+        const path = [...bestLap.recordPath.slice(Math.max(0, idx-range), Math.min(idx+range, bestLap.recordPath.length-1)).map(p => p.pos)];
 
+        
         // limit points every 10 metres to save fps
         const newPath = [];
         let lastPoint: false | Vector3 = false;
         for(const p of path) {
-            if(lastPoint === false || p.distanceTo(lastPoint) >= 10) {
+            if(lastPoint === false || p.distanceTo(lastPoint) >= 7) {
                 newPath.push(p);
                 lastPoint = p;
             }
