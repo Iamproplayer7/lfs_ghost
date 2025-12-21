@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "lfsoverlay",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/src/index.js",
   "scripts": {
     "buildTS": "tsc",

@@ -20,7 +20,7 @@ type TApp = {
 
 const MAIN_PATH = path.join(app.getPath('userData'), '/data');
 
-const VERSION = '1.0.2';
+const VERSION = '1.0.3';
 
 export const AppA: TApp = {
     window: false,
