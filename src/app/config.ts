@@ -100,7 +100,7 @@ class ConfigHandler {
                     const data = fs.readFileSync(`${MAIN_PATH}/laps/${fileName}`, 'utf-8');
                     const dataJSON = JSON.parse(data.toString()) as LapData;
 
-                    dataJSON.path = addIntermediatePoints(dataJSON.path.map((p) => { p.pos = new Vector3(p.pos); return p; }))
+                    dataJSON.path = addIntermediatePoints(dataJSON.path.map((p) => { p.pos = new Vector3(p.pos); p.speed = p.speed === undefined ? 0 : p.speed; return p; }))
 
                     this.laps.push(dataJSON);
                 }
