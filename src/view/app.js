@@ -82,8 +82,9 @@ window.IPC.on('CAMERA', (fov, pos, matrix) => {
 	camera_packet_timestamp.get = performance.now();
 });
 
-const PointGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2, 1, 1, 1);
-const PointMaterial = new THREE.MeshBasicMaterial({ wireframe: true, color: 0xffff00 });
+const PointGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1, 1, 1, 1);
+const PointGeometryWheel = new THREE.BoxGeometry(0.15, 0.35, 0.35, 1, 1, 1);
+const PointMaterial = new THREE.MeshBasicMaterial({ wireframe: false, color: 0xffff00 });
 
 const Group = new THREE.Group();
 window.IPC.on('DEBUG_DRAW', (items) => {
@@ -94,10 +95,14 @@ window.IPC.on('DEBUG_DRAW', (items) => {
 
 	for(const item of items) {
 		if(item.type == 'point') {
-			const materialToUse = item.color !== undefined ? new THREE.MeshBasicMaterial({ wireframe: true, color: item.color }) : PointMaterial;
+			const materialToUse = item.color !== undefined ? new THREE.MeshBasicMaterial({ wireframe: false, color: item.color }) : PointMaterial;
 
-			const point = new THREE.Mesh(PointGeometry, materialToUse); 
+			const point = new THREE.Mesh(item.wheel ? PointGeometryWheel : PointGeometry, materialToUse); 
 			point.position.set(item.pos.x, item.pos.z, -item.pos.y);
+			if(item.heading !== undefined) {
+				point.rotation.set(0, item.heading, 0);
+			}
+			
 			Group.add(point);
 		}
 
@@ -116,8 +121,7 @@ window.IPC.on('DEBUG_DRAW', (items) => {
 					const pMaterial = new THREE.LineBasicMaterial({ 
 						color: 0xffff00, 
 						transparent: true, 
-						//opacity: (-1 / 300 * camera.position.distanceTo(pos)) + 0.75
-						opacity: 0.75
+						opacity: (-1 / 600 * camera.position.distanceTo(pos)) + 0.75,
 					});
 
 					const pMesh = new THREE.Line(pGeometry, pMaterial);
