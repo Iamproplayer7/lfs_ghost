@@ -1,7 +1,7 @@
 {
   "type": "module",
-  "name": "lfs_ghost",
-  "version": "1.0.3",
+  "name": "lfsoverlay",
+  "version": "1.0.2",
   "main": "dist/src/index.js",
   "scripts": {
     "buildTS": "tsc",
