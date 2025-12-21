@@ -1,10 +1,6 @@
 import * as THREE from 'three';
 import Stats from './stats_module.js'
 
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TransformControls } from 'three/addons/controls/TransformControls.js';
-
 // stats monitor
 const stats = new Stats();
 stats.showPanel(0);
@@ -120,7 +116,8 @@ window.IPC.on('DEBUG_DRAW', (items) => {
 					const pMaterial = new THREE.LineBasicMaterial({ 
 						color: 0xffff00, 
 						transparent: true, 
-						opacity: (-1 / 300 * camera.position.distanceTo(pos)) + 0.75
+						//opacity: (-1 / 300 * camera.position.distanceTo(pos)) + 0.75
+						opacity: 0.75
 					});
 
 					const pMesh = new THREE.Line(pGeometry, pMaterial);
