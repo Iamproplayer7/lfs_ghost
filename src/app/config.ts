@@ -62,7 +62,6 @@ class ConfigHandler {
                 fs.mkdirSync(`${MAIN_PATH}/laps`);
             }
 
-
             // load config
             const fileNames = fs.readdirSync(`${MAIN_PATH}/laps`);
             for(const fileName of fileNames) {

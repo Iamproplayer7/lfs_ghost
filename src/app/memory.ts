@@ -16,18 +16,14 @@ const getProcess = () => {
     }
 }
 
-
 export const getCameraData = () => {
     const process = getProcess();
     if(!process || !process.handle) {
         AppA.updateLFSStatus(false);
-        return { fov: [0, 0, 0], pos: { x: 0, y: 0, z: 0 }, matrix: new Array(9).fill(0), view_plid: 0 }
+        return { fov: [0, 0, 0], pos: { x: 0, y: 0, z: 0 }, matrix: new Array(9).fill(0) }
     }
    
     AppA.updateLFSStatus(true);
-
-    // viewing vehicle PLID
-    const view_plid = memoryjs.readMemory(process.handle, 0x0082C24F, memoryjs.UBYTE);
 
     const fov = [
         memoryjs.readMemory(process.handle, 0x0089F52C, memoryjs.FLOAT),
@@ -45,7 +41,6 @@ export const getCameraData = () => {
     }
 
     return {
-        view_plid: view_plid,
         fov,
         pos,
         matrix: [
