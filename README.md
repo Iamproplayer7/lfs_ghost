@@ -3,7 +3,7 @@
 Supports latest LFS 0.8B9 version.
 
 Real-time ghost car for Live for Speed (LFS).
-Race against your best lap from the current session and improve your driving consistency.
+Race against your best qualified lap and improve your driving consistency and lap time.
 
 ## 🚗 How It Works
 
@@ -21,49 +21,37 @@ Race against your best lap from the current session and improve your driving con
 
 ## 🛠 Configuration
 
-Configure InSim settings in the following file:
-`project/src/vism/plugins/core/index.ts`
-
+Configure InSim config in the following folder, default config location for `npm run dev` is:
+`%appdata%\Electron\data`
 
 ## ▶️ Running the Script
 
 1. Start Live for Speed
-2. Go to Single Player
-3. Join a track
-4. In LFS chat, type: `/insim 29999`
-5. Run the script: `npm run dev`
+2. In LFS chat, type: `/insim 29999`
+3. Run the script: `npm run dev`
 
 ## ✅ Expected Result
 
 If everything works correctly:
 
-* Console shows “InSim connected”
-* FPS counter appears in the top-left corner of LFS
+* Console shows “InSim connected” and some LFS buttons may appear on the screen.
+* FPS counter appears in the top-left corner of LFS.
 
 Important:
 
-* LFS must be in windowed mode
+* LFS must be in windowed or borderless windowed mode
 
 ## 🐞 Known Issues
 
-* Does not work in fullscreen mode
-* No InSim error handling
-* Does not automatically reconnect if InSim fails
-* InSim must be reconnected after joining a server
-* Not heavily tested
+* Does not work in fully fullscreen mode
+* Some screen artifacts may appear like as: flickering ghost.
 
 If something does not work, try this order:
 
-1. Configure InSim
+1. Configure Config.
 2. Join track
-3. Run script
+3. Run script (make sure script does not show any error)
 4. Drive at least 2 laps to get lap times
-
-## 🚀 Planned Improvements
-
-* Save best laps between sessions
-* Show lap time timestamps
-* Store best laps for different vehicles
 
 ## 💬 Issues & Feedback
 
