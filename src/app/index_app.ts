@@ -89,7 +89,17 @@ export const AppA: TApp = {
         IPC.emit(this.window, 'update_status', { lfs: this.LFSStatus, insim: this.InSimStatus });
     },
 
-    updateInSimStatus(status: boolean)  {
+    async updateInSimStatus(status: boolean)  {
+        // just for now fix
+        if(!this.window) {
+            console.log('wait')
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    return resolve(true);
+                }, 200);
+            })
+        }
+
         if(!this.window) return;
         if(status == this.InSimStatus) return; 
         
