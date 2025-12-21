@@ -1,5 +1,6 @@
+import { Config } from "../../../app/config.js";
 import { App } from "../../../app/index.js";
-import { AppA, Config } from "../../../app/index_app.js";
+import { AppA } from "../../../app/index_app.js";
 import { getCameraData } from "../../../app/memory.js";
 import { ButtonType } from "../../main/classes/Button.js";
 import { Button, Event, EventType, InSimFlags, Interval, IS_CPP, IS_LAP, IS_STA, IS_TINY, Packet, PacketType, Player, PlayerFlags, PlayerGetter, Server, StateFlags, TinyType, Vector2, Vector3, Vehicle } from "../../main/index.js";

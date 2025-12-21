@@ -30,9 +30,6 @@ export const AppA: TApp = {
     start() {
         if(this.window) return;
 
-        Config.load();
-        Config.loadLaps();
-
         this.window = new BrowserWindow({
             width: 500,
             height: 200,
@@ -100,97 +97,3 @@ export const AppA: TApp = {
         IPC.emit(this.window, 'update_status', { lfs: this.LFSStatus, insim: this.InSimStatus });
     }   
 }
-
-import fs from 'fs';
-import { Vector3 } from 'tsinsim';
-
-type LapData = { id: string, track: string, time: number, path: { time: number, pos: Vector3, heading: number }[] }
-
-class ConfigHandler {
-    loaded: boolean = false;
-    InSim: { port: number, password: string } = { port: 29999, password: '' };
-    laps: LapData[] = [];
-
-    load() {
-        // create if data folder does not exist
-        if(!fs.existsSync(MAIN_PATH)) {
-            fs.mkdirSync(MAIN_PATH);
-        }
-
-        // create if laps folder does not exist
-        if(!fs.existsSync(`${MAIN_PATH}/laps`)) {
-            fs.mkdirSync(`${MAIN_PATH}/laps`);
-        }
-
-        // create if config file does not exist
-        if(!fs.existsSync(`${MAIN_PATH}/config.json`)) {
-            this.saveToFile();
-        }
-
-        // load config
-        const data = fs.readFileSync(`${MAIN_PATH}/config.json`, 'utf-8');
-
-        try {
-            const config = JSON.parse(data.toString());
-
-            this.InSim = config.InSim;
-            this.loaded = true;
-
-            this.saveToFile();
-        }
-        catch(e) {
-            return true;
-        }
-
-        return false;
-    }
-
-    loadLaps() {
-        // create if data folder does not exist
-        if(!fs.existsSync(MAIN_PATH)) {
-            fs.mkdirSync(MAIN_PATH);
-        }
-
-        // create if laps folder does not exist
-        if(!fs.existsSync(`${MAIN_PATH}/laps`)) {
-            fs.mkdirSync(`${MAIN_PATH}/laps`);
-        }
-
-
-        // load config
-        const fileNames = fs.readdirSync(`${MAIN_PATH}/laps`);
-        for(const fileName of fileNames) {
-            try {
-                const data = fs.readFileSync(`${MAIN_PATH}/laps/${fileName}`, 'utf-8');
-                const dataJSON = JSON.parse(data.toString()) as LapData;
-
-                dataJSON.path = dataJSON.path.map((p) => { p.pos = new Vector3(p.pos); return p; })
-                this.laps.push(dataJSON);
-            }
-            catch(e) { console.log(e) }
-        }
-
-        return false;
-    }
-
-    saveToFile() {
-        fs.writeFileSync(`${MAIN_PATH}/config.json`, JSON.stringify({ 
-            InSim: this.InSim
-        }, null, 4));
-    }
-
-    loadLap(id: string, track: string) {
-        return this.laps.find(l => l.id === id && l.track === track);
-    }
-
-    saveLapToFile(id: string, track: string, time: number, path: { time: number, pos: Vector3, heading: number }[]) {
-        fs.writeFileSync(`${MAIN_PATH}/laps/${id}_${track}.json`, JSON.stringify({ 
-            id: id,
-            track: track,
-            time: time,
-            path: path
-        }, null, 4));
-    }
-}
-
-export const Config = new ConfigHandler;
