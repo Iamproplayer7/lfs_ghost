@@ -25,7 +25,7 @@
 
         <div style="color: #d2d548;font-size: 12px;margin-bottom: 25px;"><b>INFO</b>: Any changes to Config requires application restart.</div>
 
-        <div style="color: white;">LFS status: <span id="lfs_status" style="color: red;">offline</span></div>
+        <div style="color: white;">LFS status: <span id="lfs_status" style="color: red;">Not Running</span></div>
         <div style="color: white;">InSim status: <span id="insim_status" style="color: red;">offline</span></div>
     </div>
 
@@ -71,7 +71,7 @@
     })
 
     IPC.on('update_status', (data) => {
-        $('#lfs_status').html(data.lfs ? 'online' : 'offline');
+        $('#lfs_status').html(data.lfs ? 'Running' : 'Not Running');
         $('#lfs_status').css('color', data.lfs ? 'green' : 'red');
 
         $('#insim_status').html(data.insim ? 'online' : 'offline');
