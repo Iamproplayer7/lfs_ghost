@@ -12,7 +12,7 @@ Race against your best qualified lap and improve your driving consistency and la
 * After completing a valid qualified lap, a ghost car appears.
 * The ghost drives next to you, replaying your best driven lap.
 
-https://www.youtube.com/watch?v=G8KnN_SlFZg
+https://www.youtube.com/watch?v=Azh36YBXzOM
 <img width="1089" height="645" alt="ghostcar" src="https://github.com/user-attachments/assets/d62b96e1-05de-4f7c-9eb9-ab35a5154d90" />
 
 
