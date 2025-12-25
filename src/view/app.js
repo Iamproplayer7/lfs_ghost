@@ -1,6 +1,13 @@
 import * as THREE from 'three';
 import Stats from './stats_module.js'
 
+// page load
+document.addEventListener('DOMContentLoaded', () => {
+	setTimeout(() => {
+		window.IPC.emit('load');
+	}, 500)
+});
+
 // stats monitor
 const stats = new Stats();
 stats.showPanel(0);
@@ -36,8 +43,12 @@ const camera_packet_timestamp = {
 	set: performance.now()-1 
 };
 
+let opacity_update_timestamp = performance.now();
+
 // frame
 const animate = () => {
+	const now = performance.now();
+
 	// check if camera needs update
 	if(camera_packet_timestamp.get !== camera_packet_timestamp.set) {
 		camera_packet_timestamp.set = camera_packet_timestamp.get;
@@ -66,6 +77,17 @@ const animate = () => {
 		}
 
 		camera.updateProjectionMatrix()
+
+		// update opacity on path points
+		// performance wise
+		if(now-opacity_update_timestamp > 200) {
+			opacity_update_timestamp = performance.now();
+
+			for(const line of PGroup.children) {
+				const vertex = new THREE.Vector3().fromBufferAttribute(line.geometry.getAttribute('position'), 1);
+				line.material.opacity = (-1 / 200 * camera.position.distanceTo(vertex)) + 0.75;
+			}
+		}
 	}
 
 	renderer.render(scene, camera);
@@ -82,9 +104,101 @@ window.IPC.on('CAMERA', (fov, pos, matrix) => {
 	camera_packet_timestamp.get = performance.now();
 });
 
+const PGroup = new THREE.Group();
+window.IPC.on('SET_PATH', (path) => {
+	if(PGroup.children.length > 0) {
+		scene.remove(PGroup);
+		PGroup.children = [];
+	}
+
+	var lPoint = false;
+	for(const point of path) {
+		const pos = toXZY(point.pos);
+
+		if(lPoint) {
+			const vertices = [
+				lPoint.x, lPoint.y, lPoint.z,
+				pos.x, pos.y, pos.z
+			];
+
+			const pGeometry = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+			const pMaterial = new THREE.LineBasicMaterial({ 
+				color: 0x00ff00, 
+				transparent: true, 
+				opacity: (-1 / 200 * camera.position.distanceTo(pos)) + 0.75,
+			});
+
+			const pMesh = new THREE.Line(pGeometry, pMaterial);
+			pMesh.userData.speed = point.speed;
+			PGroup.add(pMesh);
+		}
+
+		lPoint = pos;
+	}
+	
+	scene.add(PGroup);
+});
+
+// GHOST POINT 
 const PointGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1, 1, 1, 1);
-const PointGeometryWheel = new THREE.BoxGeometry(0.15, 0.35, 0.35, 1, 1, 1);
 const PointMaterial = new THREE.MeshBasicMaterial({ wireframe: false, color: 0xffff00 });
+const PointGeometryWheel = new THREE.BoxGeometry(0.15, 0.35, 0.35, 1, 1, 1);
+const PointMaterialWheel = new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.6 });
+
+const GhostObject = new THREE.Mesh(PointGeometry, PointMaterial); 
+scene.add(GhostObject);
+
+const GhostWheelsGroup = new THREE.Group();
+GhostWheelsGroup.add(new THREE.Mesh(PointGeometryWheel, PointMaterialWheel)); 
+GhostWheelsGroup.add(new THREE.Mesh(PointGeometryWheel, PointMaterialWheel)); 
+GhostWheelsGroup.add(new THREE.Mesh(PointGeometryWheel, PointMaterialWheel)); 
+GhostWheelsGroup.add(new THREE.Mesh(PointGeometryWheel, PointMaterialWheel)); 
+scene.add(GhostWheelsGroup);
+
+window.IPC.on('DRAW_GHOST', (pos, heading, wheels) => {
+	pos = toXZY(pos);
+
+	// ghost
+	GhostObject.position.set(pos.x, pos.y, pos.z);
+	GhostObject.rotation.set(0, heading, 0);
+
+	// get closest to ghost
+	const closest = { obj: false, dist: 0 };
+	for(const obj of PGroup.children) {
+		const vertex = new THREE.Vector3().fromBufferAttribute(obj.geometry.getAttribute('position'), 1);
+		const dist = vertex.distanceTo(pos);
+
+		if(closest.obj === false || dist < closest.dist) {
+			closest.obj = obj;
+			closest.dist = dist;
+		}
+	}
+
+	if(closest.obj) {
+		const idx = PGroup.children.indexOf(closest.obj);
+		const idxMin = Math.max(0, idx-50);
+		const idxMax = Math.min(idx+50, PGroup.children.length-1);
+
+		const speedCenter = PGroup.children[idx].userData.speed;
+
+		for(const obj of PGroup.children.slice(idxMin, idxMax)) {
+			obj.material.color.setHex(speedToHexColor(obj.userData.speed, speedCenter));
+		}
+	}
+
+	// wheels
+	for(const wheelPos of wheels) {
+		const idx = wheels.indexOf(wheelPos);
+		const wpos = toXZY(wheelPos);
+		const obj = GhostWheelsGroup.children[idx];
+		if(!obj) continue;
+
+		obj.position.set(wpos.x, wpos.y, wpos.z);
+		obj.rotation.set(0, heading, 0);
+	}
+});
+
+
 
 const Group = new THREE.Group();
 window.IPC.on('DEBUG_DRAW', (items) => {

@@ -1,7 +1,7 @@
 import { IS_LAP, IS_STA, PacketType, Vector3 } from "tsinsim";
 import { Button, Event, EventType, Interval, Packet, Player, PlayerGetter, Vehicle } from "../../main/index.js";
 import { getModBinData } from "./mods.js";
-import { addIntermediatePoints, Config } from "../../../app/config.js";
+import { Config } from "../../../app/config.js";
 import { App } from "../../../app/index.js";
 import { ButtonType } from "../../main/classes/Button.js";
 import { Utils } from "./utils.js";
@@ -47,7 +47,8 @@ Packet.on(PacketType.ISP_LAP, (data: IS_LAP) => {
 
     if((bestLap.time === 0 || data.LTime < bestLap.time) && currentLap.status) {
         bestLap.time = data.LTime;
-        bestLap.path = addIntermediatePoints(currentLap.path);
+        bestLap.path = currentLap.path;
+        sendPathToWeb(bestLap.path);
 
         Config.saveLapToFile(LocalVehicle.vehicle.getName(), TRACK, data.LTime, currentLap.path);
     }
@@ -73,6 +74,8 @@ Event.on(EventType.VEHICLE_CREATED, (vehicle: Vehicle, player: Player) => {
         currentLap.status = true;
         bestLap.time = lap.time;
         bestLap.path = lap.path;
+
+        sendPathToWeb(bestLap.path);
     }
 });
 
@@ -86,6 +89,8 @@ Event.on(EventType.VEHICLE_DESTROYED, (vehicle: Vehicle, player: Player) => {
     currentLap.status = false;
     bestLap.time = 0;
     bestLap.path = [];
+
+    sendPathToWeb([]);
 });
 
 Interval.set('path-record', () => {
@@ -142,43 +147,28 @@ Interval.set('server-ghost', () => {
             closestPoint.pos.z + wheel.pos.z
         );
 
-        wheels_draw.push({ type: 'point', pos: final, color: 0x0000ff, heading: heading, wheel: true })
+        wheels_draw.push(final)
     }
 
     const idx = bestLap.path.indexOf(closestPoint);
-    const rangeDistance = 100;
 
-    let idxMin = 0;
-    for(var i = Math.max(0, idx-200); i < idx; i++) {
-        const dist = bestLap.path[i].pos.distanceTo(bestLap.path[idx].pos);
-
-        if(dist < rangeDistance) {
-            idxMin = i;
-            break;
-        }
-    }
-
-    let idxMax = 0;
-    for(var i = Math.min(idx+200, bestLap.path.length-1); i >= idx; i--) {
-        const dist = bestLap.path[i].pos.distanceTo(bestLap.path[idx].pos);
-
-        if(dist < rangeDistance) {
-            idxMax = i;
-            break;
-        }
-    }
-
-    const path = [...bestLap.path.slice(idxMin, idxMax)];
     if(App.window) {
-        App.window.webContents.send('DEBUG_DRAW', [
-            ...wheels_draw,
-            { type: 'point', pos: bestLap.path[idx].pos, color: 0x00ff00, heading: bestLap.path[idx].heading * (Math.PI/180) },
-            { type: 'path', path: path.map(p => { return { pos: p.pos, color: Utils.speedToHexColor(p.speed, bestLap.path[idx].speed ) }} ) },
-            //{ type: 'path', path: path.map(p => p.pos) },
-        ]);
+        App.window.webContents.send('DRAW_GHOST', 
+            bestLap.path[idx].pos,
+            bestLap.path[idx].heading * (Math.PI/180),
+            wheels_draw
+        );
     }
-}, 10);
+}, 5);
 
+const sendPathToWeb = (path: typeof bestLap.path) => {
+    const newPath: typeof bestLap.path = [];
+    for(const p of path) {
+        newPath.push(p);
+    }
+
+    App.send('SET_PATH', newPath);
+}
 
 Interval.set('server-buttons', () => {
     const player = PlayerGetter.all.find((p) => p.isLocal());
