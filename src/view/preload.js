@@ -5,5 +5,8 @@ contextBridge.exposeInMainWorld('IPC', {
         ipcRenderer.on(name, (e, ...args) => {
             callback(...args);
         });
+    },
+    emit: (name, ...args) => {
+        ipcRenderer.send(name, ...args);
     }
 })
