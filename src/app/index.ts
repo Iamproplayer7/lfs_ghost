@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import { OverlayController } from 'electron-overlay-window';
 
 import './memory.js';
@@ -13,11 +13,16 @@ const __dirname = dirname(__filename);
 
 type TApp = {
     window: false | BrowserWindow;
+    ready: boolean;
+    cache: { name: string, args: any[] }[];
     start: () => void;
+    send: (name: string, ...args: any) => void;
 }
 
 export const App: TApp = {
     window: false,
+    ready: false,
+    cache: [],
 
     start() {
         if(this.window) return;
@@ -41,6 +46,29 @@ export const App: TApp = {
         // dev tools
         //this.window.webContents.openDevTools({ mode: 'detach' });
 
+        // page load
+        ipcMain.on('load', (event, arg) => {
+            this.ready = true;
+
+            if(this.cache.length > 0) {
+                for(const ev of this.cache) {
+                    if(!this.window) return;
+                    this.window.webContents.send(ev.name, ...ev.args);
+                }
+
+                this.cache = [];
+            }
+        });
+
         OverlayController.attachByTitle(this.window, 'Live for Speed');
+    },
+
+    send(name: string, ...args: any) {
+        if(!this.window || !this.ready) {
+            this.cache.push({ name: name, args: args });
+            return;
+        }
+
+        this.window.webContents.send(name, ...args);
     }
 }
