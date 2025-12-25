@@ -35,9 +35,10 @@ export const getCameraData = () => {
     const pos = { x: pos_buffer.readFloatLE(0), y: pos_buffer.readFloatLE(4), z: pos_buffer.readFloatLE(8) };
     
     const mstart = 0x0086B890;
+    const matrix_buffer = memoryjs.readBuffer(process.handle, mstart, 12*4);
     const matrix = [];
-    for(var i = 0; i < 16; i++) {
-        matrix.push(memoryjs.readMemory(process.handle, mstart+0x4*i, memoryjs.FLOAT));
+    for(var i = 0; i < 12; i++) {
+        matrix.push(matrix_buffer.readFloatLE(4*i));
     }
 
     return {
@@ -47,6 +48,9 @@ export const getCameraData = () => {
             matrix[0], matrix[1], matrix[2],
             matrix[4], matrix[5], matrix[6],
             matrix[8], matrix[9], matrix[10]
-        ]
+        ],
+        d: memoryjs.readMemory(process.handle, 0x0086CABC, memoryjs.BYTE),
+        d2: memoryjs.readMemory(process.handle, 0x0086C8C8, memoryjs.FLOAT),
+        d3: memoryjs.readMemory(process.handle, 0x0086C8CC, memoryjs.FLOAT),        
     }
 }

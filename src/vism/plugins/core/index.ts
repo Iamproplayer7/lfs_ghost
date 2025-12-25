@@ -7,7 +7,7 @@ import { Event, EventType, InSimFlags, Interval, IS_CPP, IS_TINY, Packet, Packet
 
 const server = Server.create({
     Admin: Config.InSim.password,                      
-    Flags: InSimFlags.ISF_LOCAL + InSimFlags.ISF_MCI + InSimFlags.ISF_CON,
+    Flags: InSimFlags.ISF_LOCAL + InSimFlags.ISF_MCI + InSimFlags.ISF_CON + InSimFlags.ISF_MSO_COLS,
     Interval: 1, 
     InSimVer: 10, 
     IName: 'VISM VIEW',
@@ -50,11 +50,22 @@ Packet.on(PacketType.ISP_CPP, async (data: IS_CPP) => {
 // send camera & matrix & fov
 setInterval(() => {
     if(!App.window) return;
-
+    
     const cam = getCameraData();
+
+    // some third camera fix
+    if(cam.d === 0) {
+        return;
+    }
+
+    // some camera rendering
+    if(cam.d2 === 512 || cam.d3 === 512 || cam.d2 === 64 || cam.d3 === 64 || cam.d2 === 32 || cam.d3 === 32) {
+        return;
+    }
 
     const fov = camMode == 1 || camMode == 2 ? 52 : (camMode == 4 ? cam.fov[1] : (camMode == 5 ? cam.fov[2] : cam.fov[0]))
     App.window.webContents.send('CAMERA', fov, cam.pos, cam.matrix);
-}, 10);
+}, 1);
 
-import './ghost.js'
+import './ghost.js';
+import './intervals.js'
