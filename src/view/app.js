@@ -80,12 +80,12 @@ const animate = () => {
 
 		// update opacity on path points
 		// performance wise
-		if(now-opacity_update_timestamp > 200) {
+		if(now-opacity_update_timestamp > 100) {
 			opacity_update_timestamp = performance.now();
 
 			for(const line of PGroup.children) {
 				const vertex = new THREE.Vector3().fromBufferAttribute(line.geometry.getAttribute('position'), 1);
-				line.material.opacity = (-1 / 200 * camera.position.distanceTo(vertex)) + 0.75;
+				line.material.opacity = (-1 / 100 * camera.position.distanceTo(vertex)) + 0.75;
 			}
 		}
 	}
